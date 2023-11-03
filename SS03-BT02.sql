@@ -9,7 +9,7 @@ cAge int
 -- có thể có nhiều hóa đơn cho mỗi khách - mqh n-1
 create table `Order` (
 oID int primary key auto_increment,
-cId int,
+cID int,
 oDate date,
 oTotalPrice float default null,
 foreign key (cID) references Customer(cID)
@@ -34,7 +34,7 @@ add constraint fk_product_id foreign key (pID) references Product(pID);
 alter table OrderDetail
 add constraint pk_product_id foreign key (pID) references Product(pID);
 -- Thêm dữ liệu vào
-insert into Customer(name, cAge) values
+insert into Customer(cName, cAge) values
 ('Minh Quan', 10),
 ('Ngoc Oanh', 20),
 ('Hong Ha', 50)
@@ -59,8 +59,22 @@ insert into OrderDetail(oID, pID, odQTY) values
 (2,3,3);
 
 -- Truy vấn
--- Hiển thị các thông tin gồm oID, oDate, oPrice của tất cả các hóa đơn trong bảng Order
-select o.oID, o.oDate, 
 -- Hiển thị danh sách các khách hàng đã mua hàng, và danh sách sản phẩm được mua bởi các khách
+SELECT c.cID, c.cName, GROUP_CONCAT(p.pName ORDER BY p.pName ASC) AS PurchasedProducts
+FROM Customer AS c
+LEFT JOIN `Order` AS o ON c.cID = o.cID
+LEFT JOIN OrderDetail AS od ON o.oID = od.oID
+LEFT JOIN Product AS p ON od.pID = p.pID
+GROUP BY c.cID, c.cName;
 -- Hiển thị tên những khách hàng không mua bất kỳ một sản phẩm nào
+SELECT c.cID, c.cName
+FROM Customer AS c
+LEFT JOIN `Order` AS o ON c.cID = o.cID
+WHERE o.oID IS NULL;
 -- Hiển thị mã hóa đơn, ngày bán và giá tiền của từng hóa đơn (giá một hóa đơn được tính bằng tổng giá bán của từng loại mặt hàng xuất hiện trong hóa đơn. Giá bán của từng loại được tính = odQTY*pPrice)
+SELECT o.oID, o.oDate, SUM(od.odQTY * p.pPrice) AS oTotalPrice
+FROM `Order` AS o
+JOIN OrderDetail AS od ON o.oID = od.oID
+JOIN Product AS p ON od.pID = p.pID
+GROUP BY o.oID, o.oDate;
+# Review code
